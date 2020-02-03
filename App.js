@@ -1,33 +1,66 @@
-import React from 'react';
-import { StyleSheet, Text, View, StatusBar, TextInput, Dimensions, Platform } from 'react-native';
+import React from "react"
+import {
+  StyleSheet,
+  Text,
+  View,
+  StatusBar,
+  TextInput,
+  Dimensions,
+  Platform,
+  ScrollView
+} from "react-native"
+import Todo from "./Todo"
 
-const {width, height} = Dimensions.get("window");
+const { width, height } = Dimensions.get("window")
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content"></StatusBar>
-      <Text style={styles.textTitle}>My To Do</Text>
-      <View style={styles.containerCard}>
-        <TextInput style={styles.input} placeholder={"New To Do"}></TextInput>
+export default class App extends React.Component {
+  state = {
+    newTodo: ""
+  }
+
+  render() {
+    const { newTodo } = this.state
+
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content"></StatusBar>
+        <Text style={styles.textTitle}>My To Do</Text>
+        <View style={styles.containerCard}>
+          <TextInput
+            style={styles.input}
+            placeholder={"New To Do"}
+            value={newTodo}
+            onChangeText={this._controlNewTodo}
+            autoCorrect={false}
+            returnKeyType={"done"}
+          ></TextInput>
+          <ScrollView contentContainerStyle={styles.todos}>
+            <Todo text={"Hello I'm a To Do"} />
+          </ScrollView>
+        </View>
       </View>
+    )
+  }
 
-    </View>
-  );
+  _controlNewTodo = text => {
+    this.setState({
+      newTodo: text
+    })
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f23657',
-    alignItems: 'center',
+    backgroundColor: "#f23657",
+    alignItems: "center"
   },
   textTitle: {
     color: "white",
     fontSize: 30,
     marginTop: 45,
     marginBottom: 25,
-    fontFamily: "sans-serif-light",
+    fontFamily: "sans-serif-light"
   },
   containerCard: {
     backgroundColor: "white",
@@ -38,17 +71,26 @@ const styles = StyleSheet.create({
 
     ...Platform.select({
       ios: {
-        shadowColor: "rgba(50, 50, 50)",
+        shadowColor: "black",
         shadowOpacity: 0.5,
         shadowRadius: 5,
         shadowOffset: {
           heigth: -1,
           width: 0
-        },
+        }
       },
       android: {
-        elevation: 5,
+        elevation: 5
       }
     })
+  },
+  input: {
+    padding: 20,
+    borderBottomColor: "gray",
+    borderBottomWidth: 1,
+    fontSize: 23
+  },
+  todos: {
+    alignItems: "center"
   }
-});
+})
