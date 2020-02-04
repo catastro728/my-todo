@@ -9,17 +9,30 @@ import {
   Platform,
   ScrollView
 } from "react-native"
+import { AppLoading } from "expo"
 import Todo from "./Todo"
+import uuidv1 from "uuid/v1"
 
 const { width, height } = Dimensions.get("window")
 
 export default class App extends React.Component {
   state = {
-    newTodo: ""
+    newTodo: "",
+    isLoadTodos: false,
+    todos: ""
+  }
+
+  componentDidMount = () => {
+    this._loadTodos()
   }
 
   render() {
-    const { newTodo } = this.state
+    const { newTodo, loadTodos, todos } = this.state
+    console.log(todos)
+
+    if (loadTodos == false) {
+      return <AppLoading />
+    }
 
     return (
       <View style={styles.container}>
@@ -33,9 +46,19 @@ export default class App extends React.Component {
             onChangeText={this._controlNewTodo}
             autoCorrect={false}
             returnKeyType={"done"}
+            onSubmitEditing={this._addTodo}
           ></TextInput>
           <ScrollView contentContainerStyle={styles.todos}>
-            <Todo text={"Hello I'm a To Do"} />
+            {Object.values(todos).map(todo => (
+              <Todo
+                key={todo.id}
+                {...todo}
+                delTodo={this._delTodo}
+                uncompleteTodo={this._uncompleteTodo}
+                completeTodo={this._completeTodo}
+                updateTodo={this._updateTodo}
+              />
+            ))}
           </ScrollView>
         </View>
       </View>
@@ -45,6 +68,94 @@ export default class App extends React.Component {
   _controlNewTodo = text => {
     this.setState({
       newTodo: text
+    })
+  }
+  _loadTodos = () => {
+    this.setState({
+      isLoadTodos: true
+    })
+  }
+  _addTodo = () => {
+    const { newTodo } = this.state
+    if (newTodo !== "") {
+      this.setState(prevState => {
+        const ID = uuidv1()
+        const newTodoObj = {
+          [ID]: {
+            id: ID,
+            isCompleted: false,
+            text: newTodo,
+            createdAt: Date.now()
+          }
+        }
+        const newState = {
+          ...prevState,
+          newTodo: "",
+          todos: {
+            ...prevState.todos,
+            ...newTodoObj
+          }
+        }
+        return { ...newState }
+      })
+    }
+  }
+  _delTodo = id => {
+    this.setState(prevState => {
+      const todos = prevState.todos
+      delete todos[id]
+
+      const newState = {
+        ...prevState,
+        ...todos
+      }
+      console.log(newState)
+      return { ...newState }
+    })
+  }
+  _uncompleteTodo = id => {
+    this.setState(prevState => {
+      const newState = {
+        ...prevState,
+        todos: {
+          ...prevState.todos,
+          [id]: {
+            ...prevState.todos[id],
+            isCompleted: false
+          }
+        }
+      }
+      return { ...newState }
+    })
+  }
+  _completeTodo = id => {
+    this.setState(prevState => {
+      const newState = {
+        ...prevState,
+        todos: {
+          ...prevState.todos,
+          [id]: {
+            ...prevState.todos[id],
+            isCompleted: true
+          }
+        }
+      }
+      return { ...newState }
+    })
+  }
+  _updateTodo = (id, text) => {
+    this.setState(prevState => {
+      const newState = {
+        ...prevState,
+        todos: {
+          ...prevState.todos,
+          [id]: {
+            ...prevState.todos[id],
+            text: text
+          }
+        }
+      }
+      return { ...newState }
     })
   }
 }

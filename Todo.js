@@ -1,18 +1,32 @@
 import React from "react"
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions, TextInput } from "react-native"
+import PropTypes from "prop-types"
+import { Updates } from "expo"
 
 const { width, heigth } = Dimensions.get("window")
 
 export default class Todo extends React.Component {
-  state = {
-    isEditing: false,
-    isCompleted: false,
-    todoValue: ""
+  constructor(props) {
+    super(props)
+    this.state = {
+      isEditing: false,
+      todoValue: props.text
+    }
+  }
+
+  static PropTypes = {
+    text: PropTypes.string.isRequired,
+    isCompleted: PropTypes.bool.isRequired,
+    delTodo: PropTypes.func.isRequired,
+    id: PropTypes.string.isRequired,
+    uncompleteTodo: PropTypes.func.isRequired,
+    completeTodo: PropTypes.func.isRequired,
+    updateTodo: PropTypes.func.isRequired
   }
 
   render() {
-    const { isCompleted, isEditing, todoValue } = this.state
-    const { text } = this.props
+    const { isEditing, todoValue } = this.state
+    const { text, id, delTodo, isCompleted } = this.props
 
     return (
       <View style={styles.container}>
@@ -37,7 +51,11 @@ export default class Todo extends React.Component {
 
           {isEditing ? (
             <TextInput
-              style={[styles.input, styles.text]}
+              style={[
+                styles.text,
+                styles.input,
+                isCompleted ? styles.completedText : styles.uncompletedText
+              ]}
               value={todoValue}
               multiline={true}
               onChangeText={this._controlInput}
@@ -68,7 +86,7 @@ export default class Todo extends React.Component {
                 <Text style={styles.textAction}>🖋</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity onPressOut={() => delTodo(id)}>
               <View style={styles.containerAction}>
                 <Text style={styles.textAction}>❌</Text>
               </View>
@@ -80,11 +98,17 @@ export default class Todo extends React.Component {
   }
 
   _toggleComplete = () => {
-    this.setState(prevState => {
-      return {
-        isCompleted: !prevState.isCompleted
-      }
-    })
+    // this.setState(prevState => {
+    //     return {
+    //       isCompleted: !prevState.isCompleted
+    //     }
+    //   })
+    const { isCompleted, completeTodo, uncompleteTodo, id } = this.props
+    if (isCompleted) {
+      uncompleteTodo(id)
+    } else {
+      completeTodo(id)
+    }
   }
   _startEditing = () => {
     const { text } = this.props
@@ -94,6 +118,9 @@ export default class Todo extends React.Component {
     })
   }
   _finishEdition = () => {
+    const { todoValue } = this.state
+    const { id, updateTodo } = this.props
+    updateTodo(id, todoValue)
     this.setState({
       isEditing: false
     })
@@ -115,7 +142,7 @@ const styles = StyleSheet.create({
   colum: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+
     width: width / 2
     // backgroundColor: "yellow"
   },
