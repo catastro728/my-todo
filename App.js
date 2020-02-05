@@ -7,7 +7,8 @@ import {
   TextInput,
   Dimensions,
   Platform,
-  ScrollView
+  ScrollView,
+  AsyncStorage
 } from "react-native"
 import { AppLoading } from "expo"
 import Todo from "./Todo"
@@ -49,16 +50,18 @@ export default class App extends React.Component {
             onSubmitEditing={this._addTodo}
           ></TextInput>
           <ScrollView contentContainerStyle={styles.todos}>
-            {Object.values(todos).map(todo => (
-              <Todo
-                key={todo.id}
-                {...todo}
-                delTodo={this._delTodo}
-                uncompleteTodo={this._uncompleteTodo}
-                completeTodo={this._completeTodo}
-                updateTodo={this._updateTodo}
-              />
-            ))}
+            {Object.values(todos)
+              .reverse()
+              .map(todo => (
+                <Todo
+                  key={todo.id}
+                  {...todo}
+                  delTodo={this._delTodo}
+                  uncompleteTodo={this._uncompleteTodo}
+                  completeTodo={this._completeTodo}
+                  updateTodo={this._updateTodo}
+                />
+              ))}
           </ScrollView>
         </View>
       </View>
@@ -70,9 +73,13 @@ export default class App extends React.Component {
       newTodo: text
     })
   }
-  _loadTodos = () => {
+  _loadTodos = async () => {
+    const todos = await AsyncStorage.getItem("toDo")
+    const parseTodo = JSON.parse(todos)
+
     this.setState({
-      isLoadTodos: true
+      isLoadTodos: true,
+      todos: parseTodo || {}
     })
   }
   _addTodo = () => {
@@ -96,6 +103,7 @@ export default class App extends React.Component {
             ...newTodoObj
           }
         }
+        this._saveTodo(newState.todos)
         return { ...newState }
       })
     }
@@ -110,6 +118,7 @@ export default class App extends React.Component {
         ...todos
       }
       console.log(newState)
+      this._saveTodo(newState.todos)
       return { ...newState }
     })
   }
@@ -125,6 +134,7 @@ export default class App extends React.Component {
           }
         }
       }
+      this._saveTodo(newState.todos)
       return { ...newState }
     })
   }
@@ -140,6 +150,7 @@ export default class App extends React.Component {
           }
         }
       }
+      this._saveTodo(newState.todos)
       return { ...newState }
     })
   }
@@ -155,15 +166,20 @@ export default class App extends React.Component {
           }
         }
       }
+      this._saveTodo(newState.todos)
       return { ...newState }
     })
+  }
+  _saveTodo = newTodo => {
+    const saveTodo = AsyncStorage.setItem("toDo", JSON.stringify(newTodo))
+    console.log(JSON.stringify(newTodo))
   }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f23657",
+    backgroundColor: "#27536B",
     alignItems: "center"
   },
   textTitle: {

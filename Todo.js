@@ -86,7 +86,12 @@ export default class Todo extends React.Component {
                 <Text style={styles.textAction}>🖋</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity onPressOut={() => delTodo(id)}>
+            <TouchableOpacity
+              onPressOut={event => {
+                event.stopPropagation
+                delTodo(id)
+              }}
+            >
               <View style={styles.containerAction}>
                 <Text style={styles.textAction}>❌</Text>
               </View>
@@ -97,12 +102,8 @@ export default class Todo extends React.Component {
     )
   }
 
-  _toggleComplete = () => {
-    // this.setState(prevState => {
-    //     return {
-    //       isCompleted: !prevState.isCompleted
-    //     }
-    //   })
+  _toggleComplete = event => {
+    event.stopPropagation()
     const { isCompleted, completeTodo, uncompleteTodo, id } = this.props
     if (isCompleted) {
       uncompleteTodo(id)
@@ -110,17 +111,20 @@ export default class Todo extends React.Component {
       completeTodo(id)
     }
   }
-  _startEditing = () => {
+  _startEditing = event => {
+    event.stopPropagation()
     const { text } = this.props
     this.setState({
       isEditing: true,
       todoValue: text
     })
   }
-  _finishEdition = () => {
+  _finishEdition = event => {
+    event.stopPropagation()
     const { todoValue } = this.state
     const { id, updateTodo } = this.props
     updateTodo(id, todoValue)
+
     this.setState({
       isEditing: false
     })
@@ -155,7 +159,7 @@ const styles = StyleSheet.create({
     width: 25,
     height: 25,
     borderRadius: 12.5,
-    borderColor: "red",
+    borderColor: "#27536B",
     borderWidth: 5,
     marginRight: 20,
     marginLeft: 5
@@ -164,7 +168,7 @@ const styles = StyleSheet.create({
     borderColor: "gray"
   },
   uncompletedCircle: {
-    borderColor: "red"
+    borderColor: "#27536B"
   },
   completedText: {
     color: "gray",
